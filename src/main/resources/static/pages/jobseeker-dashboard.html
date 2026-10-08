@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Job Seeker Dashboard</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav>
+    <div class="brand">💼 Online Job Portal</div>
+    <div>
+        <span id="welcome" style="margin-right:12px;"></span>
+        <a href="#" id="logoutLink">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card">
+        <h2>Search Jobs</h2>
+        <div class="field" style="flex-direction:row; gap:10px;">
+            <input type="text" id="keyword" placeholder="Search by title, location or company" style="flex:1;">
+            <button id="searchBtn">Search</button>
+        </div>
+        <div id="jobList"></div>
+    </div>
+
+    <div class="card">
+        <div class="top-bar"><h2>My Applications</h2><button class="btn secondary" id="refreshApps">Refresh</button></div>
+        <table>
+            <thead><tr><th>Job Title</th><th>Company</th><th>Applied On</th><th>Status</th></tr></thead>
+            <tbody id="appRows"></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+const session = requireSession('USER', 'user-login.html');
+document.getElementById('welcome').textContent = 'Hi, ' + (session ? session.name : '');
+document.getElementById('logoutLink').addEventListener('click', () => { clearSession(); window.location.href = '../index.html'; });
+
+async function loadJobs(keyword) {
+    const jobs = await apiGet('/jobs/search' + (keyword ? '?keyword=' + encodeURIComponent(keyword) : ''));
+    const container = document.getElementById('jobList');
+    container.innerHTML = '';
+    if (jobs.length === 0) { container.innerHTML = '<p style="color:#888;margin-top:10px;">No jobs found.</p>'; return; }
+    jobs.forEach(job => {
+        const div = document.createElement('div');
+        div.className = 'job-item';
+        div.innerHTML = `
+            <h4>${job.title}</h4>
+            <div class="meta">${job.company || ''} &middot; ${job.location || ''} &middot; ${job.salary || 'Not disclosed'}</div>
+            <p style="font-size:13px;color:#555;">${job.description || ''}</p>
+            <button data-jobid="${job.jobId}" class="applyBtn">Apply</button>
+        `;
+        container.appendChild(div);
+    });
+    document.querySelectorAll('.applyBtn').forEach(btn => {
+        btn.addEventListener('click', async () => {
+            try {
+                await apiPost('/applications/apply?userId=' + session.id + '&jobId=' + btn.dataset.jobid, {});
+                alert('Applied successfully!');
+                loadApplications();
+            } catch (err) {
+                alert(err.message);
+            }
+        });
+    });
+}
+
+async function loadApplications() {
+    const apps = await apiGet('/applications/user/' + session.id);
+    const rows = document.getElementById('appRows');
+    rows.innerHTML = '';
+    apps.forEach(app => {
+        rows.innerHTML += `<tr>
+            <td>${app.job?.title || '-'}</td>
+            <td>${app.job?.company || '-'}</td>
+            <td>${app.appliedDate || '-'}</td>
+            <td><span class="badge ${app.status}">${app.status}</span></td>
+        </tr>`;
+    });
+}
+
+document.getElementById('searchBtn').addEventListener('click', () => loadJobs(document.getElementById('keyword').value));
+document.getElementById('refreshApps').addEventListener('click', loadApplications);
+
+loadJobs('');
+loadApplications();
+</script>
+</body>
+</html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Employer Registration</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav>
+    <div class="brand">💼 Online Job Portal</div>
+    <div><a href="../index.html">Home</a></div>
+</nav>
+<div class="container" style="max-width:480px;">
+    <div class="card">
+        <h2>Employer Registration</h2>
+        <form id="regForm">
+            <div class="field"><label>Company Name</label><input type="text" id="companyName" required></div>
+            <div class="field"><label>Email</label><input type="email" id="email" required></div>
+            <div class="field"><label>Location</label><input type="text" id="location"></div>
+            <div class="field"><label>Password</label><input type="password" id="password" required></div>
+            <button type="submit">Register</button>
+        </form>
+        <div id="msg" class="msg hidden"></div>
+        <p style="margin-top:14px;font-size:13px;">Already registered? <a href="employer-login.html">Login here</a></p>
+    </div>
+</div>
+<script src="../js/api.js"></script>
+<script>
+document.getElementById('regForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('msg');
+    try {
+        await apiPost('/auth/register/employer', {
+            companyName: document.getElementById('companyName').value,
+            email: document.getElementById('email').value,
+            location: document.getElementById('location').value,
+            password: document.getElementById('password').value
+        });
+        showMsg(msg, 'Registration successful! Redirecting to login...', 'success');
+        setTimeout(() => window.location.href = 'employer-login.html', 1200);
+    } catch (err) {
+        showMsg(msg, err.message, 'error');
+    }
+});
+</script>
+</body>
+</html>

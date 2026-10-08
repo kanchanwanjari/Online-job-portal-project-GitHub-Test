@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Employer Dashboard</title>
+<link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+<nav>
+    <div class="brand">💼 Online Job Portal</div>
+    <div>
+        <span id="welcome" style="margin-right:12px;"></span>
+        <a href="#" id="logoutLink">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="card">
+        <h2>Post a New Job</h2>
+        <form id="jobForm">
+            <div class="field"><label>Job Title</label><input type="text" id="title" required></div>
+            <div class="field"><label>Description</label><textarea id="description" required></textarea></div>
+            <div class="field"><label>Location</label><input type="text" id="location"></div>
+            <div class="field"><label>Salary</label><input type="text" id="salary"></div>
+            <button type="submit">Post Job</button>
+        </form>
+        <div id="msg" class="msg hidden"></div>
+    </div>
+
+    <div class="card">
+        <div class="top-bar"><h2>My Job Postings</h2><button class="btn secondary" id="refreshJobs">Refresh</button></div>
+        <div id="jobList"></div>
+    </div>
+
+    <div class="card">
+        <h2>Applicants</h2>
+        <p style="font-size:13px;color:#666;margin-bottom:10px;">Click "View Applicants" on a job above to load its applicants here.</p>
+        <table>
+            <thead><tr><th>Applicant</th><th>Email</th><th>Applied On</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="appRows"></tbody>
+        </table>
+    </div>
+</div>
+
+<script src="../js/api.js"></script>
+<script>
+const session = requireSession('EMPLOYER', 'employer-login.html');
+document.getElementById('welcome').textContent = 'Hi, ' + (session ? session.name : '');
+document.getElementById('logoutLink').addEventListener('click', () => { clearSession(); window.location.href = '../index.html'; });
+
+document.getElementById('jobForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const msg = document.getElementById('msg');
+    try {
+        await apiPost('/jobs/post/' + session.id, {
+            title: document.getElementById('title').value,
+            description: document.getElementById('description').value,
+            location: document.getElementById('location').value,
+            salary: document.getElementById('salary').value
+        });
+        showMsg(msg, 'Job posted successfully!', 'success');
+        e.target.reset();
+        loadJobs();
+    } catch (err) {
+        showMsg(msg, err.message, 'error');
+    }
+});
+
+async function loadJobs() {
+    const jobs = await apiGet('/jobs/employer/' + session.id);
+    const container = document.getElementById('jobList');
+    container.innerHTML = '';
+    if (jobs.length === 0) { container.innerHTML = '<p style="color:#888;">No jobs posted yet.</p>'; return; }
+    jobs.forEach(job => {
+        const div = document.createElement('div');
+        div.className = 'job-item';
+        div.innerHTML = `
+            <h4>${job.title}</h4>
+            <div class="meta">${job.location || ''} &middot; ${job.salary || 'Not disclosed'} &middot; Posted: ${job.postedDate || ''}</div>
+            <button data-jobid="${job.jobId}" class="viewAppsBtn">View Applicants</button>
+            <button data-jobid="${job.jobId}" class="btn danger deleteJobBtn">Delete</button>
+        `;
+        container.appendChild(div);
+    });
+    document.querySelectorAll('.viewAppsBtn').forEach(btn => btn.addEventListener('click', () => loadApplicants(btn.dataset.jobid)));
+    document.querySelectorAll('.deleteJobBtn').forEach(btn => btn.addEventListener('click', async () => {
+        if (!confirm('Delete this job?')) return;
+        await apiDelete('/jobs/' + btn.dataset.jobid);
+        loadJobs();
+    }));
+}
+
+async function loadApplicants(jobId) {
+    const apps = await apiGet('/applications/job/' + jobId);
+    const rows = document.getElementById('appRows');
+    rows.innerHTML = '';
+    apps.forEach(app => {
+        rows.innerHTML += `<tr>
+            <td>${app.user?.name || '-'}</td>
+            <td>${app.user?.email || '-'}</td>
+            <td>${app.appliedDate || '-'}</td>
+            <td><span class="badge ${app.status}">${app.status}</span></td>
+            <td>
+                <select data-appid="${app.appId}" class="statusSelect">
+                    <option ${app.status==='Applied'?'selected':''}>Applied</option>
+                    <option ${app.status==='Shortlisted'?'selected':''}>Shortlisted</option>
+                    <option ${app.status==='Selected'?'selected':''}>Selected</option>
+                    <option ${app.status==='Rejected'?'selected':''}>Rejected</option>
+                </select>
+            </td>
+        </tr>`;
+    });
+    document.querySelectorAll('.statusSelect').forEach(sel => sel.addEventListener('change', async () => {
+        await apiPut('/applications/' + sel.dataset.appid + '/status', { status: sel.value });
+        loadApplicants(jobId);
+    }));
+}
+
+document.getElementById('refreshJobs').addEventListener('click', loadJobs);
+loadJobs();
+</script>
+</body>
+</html>

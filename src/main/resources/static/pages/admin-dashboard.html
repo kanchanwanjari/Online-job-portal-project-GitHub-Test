@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Admin Dashboard | Online Job Portal</title>
+
+<link rel="stylesheet" href="../css/style.css">
+
+<style>
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        background: #f4f7fb;
+        color: #1f2937;
+    }
+
+    /* ================= NAVBAR ================= */
+
+    nav {
+        height: 70px;
+        background: linear-gradient(135deg, #1e3a8a, #2563eb);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 35px;
+        box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .brand {
+        font-size: 22px;
+        font-weight: 700;
+    }
+
+    .admin-right {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    #welcome {
+        font-size: 15px;
+        font-weight: 500;
+    }
+
+    #logoutLink {
+        color: white;
+        text-decoration: none;
+        padding: 9px 16px;
+        border: 1px solid rgba(255,255,255,0.5);
+        border-radius: 8px;
+        transition: 0.3s;
+    }
+
+    #logoutLink:hover {
+        background: white;
+        color: #1e3a8a;
+    }
+
+    /* ================= MAIN ================= */
+
+    .dashboard {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 30px;
+    }
+
+    .dashboard-header {
+        margin-bottom: 25px;
+    }
+
+    .dashboard-header h1 {
+        margin: 0 0 7px;
+        font-size: 30px;
+        color: #111827;
+    }
+
+    .dashboard-header p {
+        margin: 0;
+        color: #6b7280;
+    }
+
+    /* ================= STAT CARDS ================= */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        border-radius: 15px;
+        padding: 22px;
+        display: flex;
+        align-items: center;
+        gap: 18px;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, 0.07);
+        border: 1px solid #e5e7eb;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 25px rgba(15, 23, 42, 0.12);
+    }
+
+    .stat-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 25px;
+        background: #eff6ff;
+    }
+
+    .stat-info h3 {
+        margin: 0;
+        font-size: 28px;
+        color: #111827;
+    }
+
+    .stat-info p {
+        margin: 5px 0 0;
+        color: #6b7280;
+        font-size: 14px;
+    }
+
+    /* ================= SECTIONS ================= */
+
+    .card {
+        background: white;
+        border-radius: 15px;
+        margin-bottom: 25px;
+        padding: 25px;
+        border: 1px solid #e5e7eb;
+        box-shadow: 0 5px 20px rgba(15, 23, 42, 0.06);
+        overflow-x: auto;
+    }
+
+    .top-bar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+    }
+
+    .top-bar h2 {
+        margin: 0;
+        font-size: 21px;
+        color: #111827;
+    }
+
+    /* ================= BUTTONS ================= */
+
+    .btn {
+        border: none;
+        border-radius: 7px;
+        padding: 9px 15px;
+        cursor: pointer;
+        font-size: 13px;
+        font-weight: 600;
+        transition: 0.2s;
+    }
+
+    .btn.secondary {
+        background: #eff6ff;
+        color: #2563eb;
+    }
+
+    .btn.secondary:hover {
+        background: #dbeafe;
+    }
+
+    .btn.danger {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .btn.danger:hover {
+        background: #dc2626;
+        color: white;
+    }
+
+    /* ================= TABLE ================= */
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 650px;
+    }
+
+    thead {
+        background: #f8fafc;
+    }
+
+    th {
+        text-align: left;
+        padding: 14px 15px;
+        font-size: 13px;
+        color: #475569;
+        border-bottom: 1px solid #e5e7eb;
+    }
+
+    td {
+        padding: 14px 15px;
+        font-size: 14px;
+        border-bottom: 1px solid #f1f5f9;
+        color: #374151;
+    }
+
+    tbody tr:hover {
+        background: #f8fafc;
+    }
+
+    /* ================= STATUS ================= */
+
+    .badge {
+        display: inline-block;
+        padding: 5px 11px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: capitalize;
+    }
+
+    .badge.Applied {
+        background: #dbeafe;
+        color: #1d4ed8;
+    }
+
+    .badge.Shortlisted {
+        background: #fef3c7;
+        color: #b45309;
+    }
+
+    .badge.Rejected {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+
+    .badge.Accepted {
+        background: #dcfce7;
+        color: #15803d;
+    }
+
+    /* ================= EMPTY MESSAGE ================= */
+
+    .empty-row {
+        text-align: center;
+        padding: 25px;
+        color: #9ca3af;
+    }
+
+    /* ================= RESPONSIVE ================= */
+
+    @media (max-width: 1000px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (max-width: 650px) {
+        nav {
+            padding: 0 15px;
+        }
+
+        .brand {
+            font-size: 17px;
+        }
+
+        #welcome {
+            display: none;
+        }
+
+        .dashboard {
+            padding: 18px;
+        }
+
+        .stats-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-header h1 {
+            font-size: 25px;
+        }
+
+        .card {
+            padding: 18px;
+        }
+    }
+</style>
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+
+<nav>
+    <div class="brand">💼 Online Job Portal</div>
+
+    <div class="admin-right">
+        <span id="welcome"></span>
+        <a href="#" id="logoutLink">Logout</a>
+    </div>
+</nav>
+
+
+<!-- ================= DASHBOARD ================= -->
+
+<div class="dashboard">
+
+    <div class="dashboard-header">
+        <h1>Admin Dashboard</h1>
+        <p>Manage users, employers, jobs and applications from one place.</p>
+    </div>
+
+
+    <!-- ================= STATISTICS ================= -->
+
+    <div class="stats-grid">
+
+        <div class="stat-card">
+            <div class="stat-icon">👨‍💼</div>
+            <div class="stat-info">
+                <h3 id="totalUsers">0</h3>
+                <p>Job Seekers</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">🏢</div>
+            <div class="stat-info">
+                <h3 id="totalEmployers">0</h3>
+                <p>Employers</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">💼</div>
+            <div class="stat-info">
+                <h3 id="totalJobs">0</h3>
+                <p>Total Jobs</p>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon">📄</div>
+            <div class="stat-info">
+                <h3 id="totalApplications">0</h3>
+                <p>Applications</p>
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- ================= JOB SEEKERS ================= -->
+
+    <div class="card">
+
+        <div class="top-bar">
+            <h2>👨‍💼 Job Seekers</h2>
+            <button class="btn secondary" id="refreshUsers">Refresh</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="userRows"></tbody>
+        </table>
+
+    </div>
+
+
+    <!-- ================= EMPLOYERS ================= -->
+
+    <div class="card">
+
+        <div class="top-bar">
+            <h2>🏢 Employers</h2>
+            <button class="btn secondary" id="refreshEmployers">Refresh</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Company</th>
+                    <th>Email</th>
+                    <th>Location</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+
+            <tbody id="empRows"></tbody>
+        </table>
+
+    </div>
+
+
+    <!-- ================= JOBS ================= -->
+
+    <div class="card">
+
+        <div class="top-bar">
+            <h2>💼 All Jobs</h2>
+            <button class="btn secondary" id="refreshJobs">Refresh</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Company</th>
+                    <th>Location</th>
+                    <th>Posted</th>
+                </tr>
+            </thead>
+
+            <tbody id="jobRows"></tbody>
+        </table>
+
+    </div>
+
+
+    <!-- ================= APPLICATIONS ================= -->
+
+    <div class="card">
+
+        <div class="top-bar">
+            <h2>📄 All Applications</h2>
+            <button class="btn secondary" id="refreshApps">Refresh</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Applicant</th>
+                    <th>Job</th>
+                    <th>Company</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody id="appRows"></tbody>
+        </table>
+
+    </div>
+
+</div>
+
+
+<!-- ================= JAVASCRIPT ================= -->
+
+<script src="../js/api.js"></script>
+
+<script>
+
+const session = requireSession('ADMIN', 'admin-login.html');
+
+document.getElementById('welcome').textContent =
+    'Hi, ' + (session ? session.name : 'Admin');
+
+
+/* ================= LOGOUT ================= */
+
+document.getElementById('logoutLink').addEventListener('click', () => {
+
+    clearSession();
+
+    window.location.href = '../index.html';
+
+});
+
+
+/* ================= LOAD USERS ================= */
+
+async function loadUsers() {
+
+    const users = await apiGet('/admin/users');
+
+    const rows = document.getElementById('userRows');
+
+    rows.innerHTML = '';
+
+    document.getElementById('totalUsers').textContent = users.length;
+
+    if (!users.length) {
+
+        rows.innerHTML =
+            '<tr><td colspan="4" class="empty-row">No job seekers found</td></tr>';
+
+        return;
+    }
+
+    users.forEach(u => {
+
+        rows.innerHTML += `
+            <tr>
+                <td>${u.name}</td>
+                <td>${u.email}</td>
+                <td>${u.phone || '-'}</td>
+
+                <td>
+                    <button
+                        class="btn danger"
+                        onclick="deleteUser(${u.userId})">
+                        Delete
+                    </button>
+                </td>
+            </tr>
+        `;
+
+    });
+
+}
+
+
+/* ================= LOAD EMPLOYERS ================= */
+
+async function loadEmployers() {
+
+    const emps = await apiGet('/admin/employers');
+
+    const rows = document.getElementById('empRows');
+
+    rows.innerHTML = '';
+
+    document.getElementById('totalEmployers').textContent = emps.length;
+
+    if (!emps.length) {
+
+        rows.innerHTML =
+            '<tr><td colspan="4" class="empty-row">No employers found</td></tr>';
+
+        return;
+    }
+
+    emps.forEach(e => {
+
+        rows.innerHTML += `
+            <tr>
+
+                <td>${e.companyName}</td>
+
+                <td>${e.email}</td>
+
+                <td>${e.location || '-'}</td>
+
+                <td>
+                    <button
+                        class="btn danger"
+                        onclick="deleteEmployer(${e.empId})">
+                        Delete
+                    </button>
+                </td>
+
+            </tr>
+        `;
+
+    });
+
+}
+
+
+/* ================= LOAD JOBS ================= */
+
+async function loadJobs() {
+
+    const jobs = await apiGet('/jobs');
+
+    const rows = document.getElementById('jobRows');
+
+    rows.innerHTML = '';
+
+    document.getElementById('totalJobs').textContent = jobs.length;
+
+    if (!jobs.length) {
+
+        rows.innerHTML =
+            '<tr><td colspan="4" class="empty-row">No jobs found</td></tr>';
+
+        return;
+    }
+
+    jobs.forEach(j => {
+
+        rows.innerHTML += `
+            <tr>
+
+                <td>${j.title}</td>
+
+                <td>
+                    ${j.company || j.employer?.companyName || '-'}
+                </td>
+
+                <td>${j.location || '-'}</td>
+
+                <td>${j.postedDate || '-'}</td>
+
+            </tr>
+        `;
+
+    });
+
+}
+
+
+/* ================= LOAD APPLICATIONS ================= */
+
+async function loadApplications() {
+
+    const apps = await apiGet('/applications');
+
+    const rows = document.getElementById('appRows');
+
+    rows.innerHTML = '';
+
+    document.getElementById('totalApplications').textContent =
+        apps.length;
+
+    if (!apps.length) {
+
+        rows.innerHTML =
+            '<tr><td colspan="4" class="empty-row">No applications found</td></tr>';
+
+        return;
+    }
+
+    apps.forEach(a => {
+
+        rows.innerHTML += `
+            <tr>
+
+                <td>${a.user?.name || '-'}</td>
+
+                <td>${a.job?.title || '-'}</td>
+
+                <td>${a.job?.company || '-'}</td>
+
+                <td>
+                    <span class="badge ${a.status}">
+                        ${a.status}
+                    </span>
+                </td>
+
+            </tr>
+        `;
+
+    });
+
+}
+
+
+/* ================= DELETE USER ================= */
+
+async function deleteUser(id) {
+
+    if (!confirm('Delete this job seeker?')) return;
+
+    await apiDelete('/admin/users/' + id);
+
+    loadUsers();
+
+}
+
+
+/* ================= DELETE EMPLOYER ================= */
+
+async function deleteEmployer(id) {
+
+    if (!confirm('Delete this employer?')) return;
+
+    await apiDelete('/admin/employers/' + id);
+
+    loadEmployers();
+
+}
+
+
+/* ================= REFRESH BUTTONS ================= */
+
+document
+    .getElementById('refreshUsers')
+    .addEventListener('click', loadUsers);
+
+document
+    .getElementById('refreshEmployers')
+    .addEventListener('click', loadEmployers);
+
+document
+    .getElementById('refreshJobs')
+    .addEventListener('click', loadJobs);
+
+document
+    .getElementById('refreshApps')
+    .addEventListener('click', loadApplications);
+
+
+/* ================= INITIAL LOAD ================= */
+
+loadUsers();
+loadEmployers();
+loadJobs();
+loadApplications();
+
+</script>
+
+</body>
+</html>
